@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="Figured logo: a bass clef (F clef) with the figures 6 and 5 in place of its dots">
+  <rect width="180" height="180" rx="28" fill="#1d1f27"/>
+  <!-- Bass clef: head dot and curl -->
+  <g fill="#e0a54a">
+    <circle cx="52" cy="68" r="14"/>
+    <path d="M40 66 C42 38 72 26 94 32 C122 40 130 74 114 102 C98 130 66 146 34 156 L31 149 C60 138 86 120 97 98 C108 76 102 46 80 44 C64 42 54 52 52 60 Z"/>
+  </g>
+  <!-- Figured bass 6 over 5, where the clef's two dots go -->
+  <g fill="#f8f8f2" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="40" text-anchor="middle">
+    <text x="148" y="70">6</text>
+    <text x="148" y="112">5</text>
+  </g>
+</svg>

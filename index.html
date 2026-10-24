@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- Scripts come only from this site and the pinned jsDelivr files. Audio samples come only from tonejs.github.io. -->
+  <!-- Tone.js needs blob: for its AudioWorklet. VexFlow needs 'unsafe-inline' for SVG style attributes. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net blob:; worker-src 'self' blob:; connect-src 'self' https://tonejs.github.io; media-src 'self' blob: https://tonejs.github.io; style-src 'self' 'unsafe-inline'; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <title>Figured</title>
+  <meta name="description" content="Practice naming key signatures and chords: Roman numerals, figured bass, chord symbols, and open or close structure.">
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+
+  <!-- Installable web app (PWA). Android and Chrome use the manifest. iOS uses the apple-touch-icon and apple-mobile-web-app-* tags. -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#14151a" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167x167.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152x152.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Figured" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1><img class="logo" src="icon.svg" alt="" width="44" height="44" />Figured</h1>
+      <div class="subtitle">Name the key · name the chord · name the figure</div>
+    </header>
+
+    <div class="mode-tabs" id="drill" role="group" aria-label="Drill">
+      <button type="button" class="mode-tab" data-value="chords">Chords</button>
+      <button type="button" class="mode-tab" data-value="keys">Key signatures</button>
+    </div>
+
+    <details class="card settings-card" open>
+      <summary class="settings-summary">Options</summary>
+      <div class="settings">
+        <div class="setting-group">
+          <label class="group-label">Keys</label>
+          <div class="chip-row" id="key-mode">
+            <button type="button" class="chip" data-value="both">Major &amp; minor</button>
+            <button type="button" class="chip" data-value="major">Major</button>
+            <button type="button" class="chip" data-value="minor">Minor</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label class="group-label">Up to</label>
+          <div class="chip-row" id="max-acc">
+            <button type="button" class="chip" data-value="3">3 ♯/♭</button>
+            <button type="button" class="chip" data-value="5">5 ♯/♭</button>
+            <button type="button" class="chip" data-value="7">7 ♯/♭</button>
+          </div>
+        </div>
+        <div class="setting-group" data-for="keys">
+          <label class="group-label">Clef</label>
+          <div class="chip-row" id="clef">
+            <button type="button" class="chip" data-value="both">Treble &amp; bass</button>
+            <button type="button" class="chip" data-value="treble">Treble</button>
+            <button type="button" class="chip" data-value="bass">Bass</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings chord-settings" data-for="chords">
+        <div class="setting-group">
+          <label class="group-label">Chords</label>
+          <div class="chip-row" id="types">
+            <button type="button" class="chip" data-value="triad">Triads</button>
+            <button type="button" class="chip" data-value="seventh">Seventh chords</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label class="group-label">Inversions</label>
+          <div class="chip-row" id="inversions">
+            <button type="button" class="chip" data-value="0">Root</button>
+            <button type="button" class="chip" data-value="1">1st</button>
+            <button type="button" class="chip" data-value="2">2nd</button>
+            <button type="button" class="chip" data-value="3">3rd</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label class="group-label">Name with</label>
+          <div class="chip-row" id="labels">
+            <button type="button" class="chip" data-value="rn">Roman numerals</button>
+            <button type="button" class="chip" data-value="fb">Figured bass</button>
+            <button type="button" class="chip" data-value="pop">Chord symbols</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label class="group-label">Also ask</label>
+          <div class="chip-row" id="structure">
+            <button type="button" class="chip" data-value="on">Open / close structure</button>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="card">
+      <div class="stats-bar">
+        <div class="stat"><div class="num" id="st-correct">0</div><div class="lbl">Correct</div></div>
+        <div class="stat"><div class="num" id="st-total">0</div><div class="lbl">Questions</div></div>
+        <div class="stat"><div class="num acc" id="st-acc">---</div><div class="lbl">Accuracy</div></div>
+        <div class="stat"><div class="num streak" id="st-streak">0</div><div class="lbl">Streak</div></div>
+      </div>
+    </div>
+
+    <div id="audio-loader" class="loader hidden">Loading piano samples… (first time only)</div>
+
+    <article class="card question" id="question" aria-live="polite">
+      <div class="question-head">
+        <span class="prompt" id="prompt"></span>
+        <button class="btn btn-secondary btn-small" id="play" type="button">▶ Play</button>
+        <button class="btn btn-secondary btn-small" id="arpeggio" type="button">Arpeggio</button>
+      </div>
+      <div class="staff-box" id="staff"></div>
+      <div id="answers" class="answers"></div>
+      <div class="preview" id="preview"></div>
+      <div class="answer-row">
+        <button class="btn btn-primary" id="check" type="button">Check</button>
+        <button class="link-btn" id="reveal" type="button">Show answer</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </article>
+
+    <details class="card settings-card">
+      <summary class="settings-summary">Reference</summary>
+      <div class="reference">
+        <h3 class="rule-category">Key signatures</h3>
+        <ul class="rule-list">
+          <li><b>Sharp keys:</b> the last sharp is the leading tone. The major key is a half step above it.</li>
+          <li><b>Flat keys:</b> the second-to-last flat is the major key. One flat is F major.</li>
+          <li><b>Minor keys:</b> the relative minor is a minor third below the major key, on scale degree 6.</li>
+        </ul>
+        <h3 class="rule-category">Figured bass</h3>
+        <ul class="rule-list">
+          <li><b>Triads:</b> root position <span class="figs"><span>5</span><span>3</span></span> (no figure), first inversion <sup>6</sup>, second inversion <span class="figs"><span>6</span><span>4</span></span>.</li>
+          <li><b>Seventh chords:</b> root position <sup>7</sup>, first inversion <span class="figs"><span>6</span><span>5</span></span>, second inversion <span class="figs"><span>4</span><span>3</span></span>, third inversion <span class="figs"><span>4</span><span>2</span></span>.</li>
+        </ul>
+        <h3 class="rule-category">Chord quality</h3>
+        <ul class="rule-list">
+          <li><b>Roman numerals:</b> upper case for major (I, IV, V), lower case for minor (ii, iii, vi), ° for diminished, ø for half-diminished, M for a major seventh (I<sup>M7</sup>).</li>
+          <li><b>Chord symbols:</b> C, Cm, Cdim, C7, Cmaj7, Cm7, Cm7♭5, Cdim7. A slash shows the bass note in an inversion (C/E).</li>
+          <li><b>Minor keys:</b> V, V7, vii°, and vii°7 use the raised leading tone (harmonic minor). The other chords use natural minor.</li>
+        </ul>
+        <h3 class="rule-category">Structure</h3>
+        <ul class="rule-list">
+          <li><b>Close:</b> less than an octave between the soprano and the tenor.</li>
+          <li><b>Open:</b> an octave or more between the soprano and the tenor.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card settings-card">
+      <summary class="settings-summary">Your progress</summary>
+      <table class="rule-stats">
+        <thead><tr><th>Topic</th><th>Correct</th><th></th></tr></thead>
+        <tbody id="topic-stats"></tbody>
+      </table>
+      <button id="reset-stats" class="btn btn-secondary btn-small" type="button">Reset progress</button>
+    </details>
+
+    <footer class="app-footer">
+      Piano samples:
+      <a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noopener noreferrer">Salamander Grand Piano</a>
+      by Alexander Holm, licensed
+      <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">CC BY 3.0</a>.
+    </footer>
+  </div>
+
+  <!-- Each script has a pinned version and an SRI (SHA-384) hash. If you change a version, make a new hash. If you do not, the browser blocks the script. -->
+  <!-- Command: curl -sL <script-url> | openssl dgst -sha384 -binary | openssl base64 -A -->
+  <!-- Add the prefix "sha384-" to the output and put it in the integrity attribute. -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js"
+    integrity="sha384-NWoslxaf/3dYwQk+uGziDYJFdsjBpVlU1WpFRexuDFcIk/5PJpCbpVXia2Uikeix"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/vexflow@5.0.0/build/cjs/vexflow.js"
+    integrity="sha384-CqssDDrB0gDzmUGwU/TPip4CJOQif4qWkW+w31xtNqLV34D7utsq7O4N7uBAtF9u"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+  <script src="js/theory.js"></script>
+  <script src="js/samples.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/staff.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
